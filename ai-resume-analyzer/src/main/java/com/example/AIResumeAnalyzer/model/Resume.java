@@ -23,7 +23,7 @@ public class Resume {
     private String fileName;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "uploaded_file", nullable = false)
+    @JoinColumn(name = "uploaded_file_id", nullable = false)
     private UploadedFile uploadedFile;
 
     private LocalDate uploadDate;

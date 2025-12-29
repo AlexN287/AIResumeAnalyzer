@@ -22,6 +22,6 @@ public class UploadedFile {
     private LocalDateTime uploadedAt = LocalDateTime.now();
 
     @Lob
-    @Column(columnDefinition = "BYTEA")
+    @Column(nullable = false, columnDefinition = "BLOB")
     private byte[] data;
 }

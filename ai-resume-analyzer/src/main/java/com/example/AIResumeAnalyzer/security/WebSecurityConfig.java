@@ -24,6 +24,7 @@ public class WebSecurityConfig {
         http
                 .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((requests) -> requests
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/auth/signin").permitAll()
                         .requestMatchers("/auth/signup").permitAll()
                         .anyRequest().authenticated()
