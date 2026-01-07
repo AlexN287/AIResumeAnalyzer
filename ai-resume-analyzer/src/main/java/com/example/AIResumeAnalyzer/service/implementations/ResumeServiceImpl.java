@@ -1,8 +1,12 @@
 package com.example.AIResumeAnalyzer.service.implementations;
 
+import com.example.AIResumeAnalyzer.Utils.PDFUtils;
 import com.example.AIResumeAnalyzer.model.Resume;
+import com.example.AIResumeAnalyzer.model.ResumeAnalysis;
 import com.example.AIResumeAnalyzer.model.UploadedFile;
 import com.example.AIResumeAnalyzer.model.User;
+import com.example.AIResumeAnalyzer.openAI.OpenAIservice;
+import com.example.AIResumeAnalyzer.repository.ResumeAnalysisRepository;
 import com.example.AIResumeAnalyzer.repository.ResumeRepository;
 import com.example.AIResumeAnalyzer.repository.UserRepository;
 import com.example.AIResumeAnalyzer.service.ResumeService;
@@ -19,6 +23,8 @@ import java.time.LocalDate;
 public class ResumeServiceImpl implements ResumeService {
     private final ResumeRepository resumeRepository;
     private final UserRepository userRepository;
+    private final OpenAIservice openAIservice;
+    private final ResumeAnalysisRepository resumeAnalysisRepository;
 
     @Transactional
     @Override
@@ -39,7 +45,17 @@ public class ResumeServiceImpl implements ResumeService {
                 LocalDate.now()
         );
 
-        return resumeRepository.save(resume);
+        resume = resumeRepository.save(resume);
+
+        // 5️⃣ Call OpenAI
+        ResumeAnalysis analysis = openAIservice.analyzeResume(file.getBytes(), resume);
+
+        resumeAnalysisRepository.save(analysis);
+
+        // 7️⃣ Link analysis to resume
+        resume.setResumeAnalysis(analysis);
+
+        return resume;
     }
 
     @Transactional
