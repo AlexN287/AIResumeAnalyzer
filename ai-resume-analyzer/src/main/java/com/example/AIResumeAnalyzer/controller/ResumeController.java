@@ -1,5 +1,6 @@
 package com.example.AIResumeAnalyzer.controller;
 
+import com.example.AIResumeAnalyzer.Utils.PDFUtils;
 import com.example.AIResumeAnalyzer.model.Resume;
 import com.example.AIResumeAnalyzer.model.UploadedFile;
 import com.example.AIResumeAnalyzer.service.ResumeService;

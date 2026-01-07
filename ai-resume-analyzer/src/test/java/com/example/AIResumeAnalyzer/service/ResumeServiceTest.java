@@ -1,8 +1,11 @@
 package com.example.AIResumeAnalyzer.service;
 
 import com.example.AIResumeAnalyzer.model.Resume;
+import com.example.AIResumeAnalyzer.model.ResumeAnalysis;
 import com.example.AIResumeAnalyzer.model.UploadedFile;
 import com.example.AIResumeAnalyzer.model.User;
+import com.example.AIResumeAnalyzer.openAI.OpenAIservice;
+import com.example.AIResumeAnalyzer.repository.ResumeAnalysisRepository;
 import com.example.AIResumeAnalyzer.repository.ResumeRepository;
 import com.example.AIResumeAnalyzer.repository.UserRepository;
 import com.example.AIResumeAnalyzer.service.implementations.ResumeServiceImpl;
@@ -30,6 +33,12 @@ class ResumeServiceTest {
     @Mock
     private ResumeRepository resumeRepository;
 
+    @Mock
+    private OpenAIservice openAIservice;
+
+    @Mock
+    private ResumeAnalysisRepository resumeAnalysisRepository;
+
     @InjectMocks
     private ResumeServiceImpl resumeService;
 
@@ -46,7 +55,20 @@ class ResumeServiceTest {
         );
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
         when(resumeRepository.save(any(Resume.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        ResumeAnalysis fakeAnalysis = new ResumeAnalysis();
+        fakeAnalysis.setStrengths("Good skills");
+        fakeAnalysis.setWeaknesses("Needs improvement");
+        fakeAnalysis.setSkillSuggestions("Java, Spring");
+        fakeAnalysis.setOverallFeedback("Well-prepared candidate");
+
+        when(openAIservice.analyzeResume(any(byte[].class), any(Resume.class)))
+                .thenReturn(fakeAnalysis);
+
+        when(resumeAnalysisRepository.save(any(ResumeAnalysis.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         Resume resume = resumeService.uploadResume(userId, file);
@@ -55,13 +77,19 @@ class ResumeServiceTest {
         Assertions.assertEquals("resume.pdf", resume.getFileName());
         Assertions.assertEquals(user, resume.getUser());
         Assertions.assertNotNull(resume.getUploadedFile());
-        Assertions.assertEquals(
-                "application/pdf",
-                resume.getUploadedFile().getContentType()
-        );
+        Assertions.assertEquals("application/pdf", resume.getUploadedFile().getContentType());
+
+        Assertions.assertNotNull(resume.getResumeAnalysis());
+        ResumeAnalysis analysis = resume.getResumeAnalysis();
+        Assertions.assertEquals("Good skills", analysis.getStrengths());
+        Assertions.assertEquals("Needs improvement", analysis.getWeaknesses());
+        Assertions.assertEquals("Java, Spring", analysis.getSkillSuggestions());
+        Assertions.assertEquals("Well-prepared candidate", analysis.getOverallFeedback());
 
         verify(userRepository).findById(userId);
         verify(resumeRepository).save(any(Resume.class));
+        verify(openAIservice).analyzeResume(any(byte[].class), any(Resume.class));
+        verify(resumeAnalysisRepository).save(any(ResumeAnalysis.class));
     }
 
     @Test
