@@ -16,7 +16,6 @@ public class UserServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Mock the repository (no DB)
         userRepository = Mockito.mock(UserRepository.class);
         userService = new UserServiceImpl(userRepository);
     }

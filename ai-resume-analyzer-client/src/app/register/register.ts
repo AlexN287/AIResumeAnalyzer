@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
+import { AuthService } from '../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -13,11 +15,14 @@ export class Register {
   registerForm: FormGroup;
   submitted = false;
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) {
     this.registerForm = this.fb.group(
       {
         username: ['', Validators.required],
-        email: ['', [Validators.required, Validators.email]],
         password: ['', [Validators.required, Validators.minLength(6)]],
         confirmPassword: ['', Validators.required],
       },
@@ -27,13 +32,8 @@ export class Register {
     );
   }
 
-  // getters (clean + strict-mode safe)
   get username() {
     return this.registerForm.get('username');
-  }
-
-  get email() {
-    return this.registerForm.get('email');
   }
 
   get password() {
@@ -54,7 +54,22 @@ export class Register {
     this.submitted = true;
     if (this.registerForm.invalid) return;
 
-    console.log('Register data:', this.registerForm.value);
-    // TODO: call backend register API
+    const request = {
+      username: this.username?.value,
+      password: this.password?.value
+    };
+
+    this.authService.signup(request).subscribe({
+      next: (res) => {
+        console.log('User registered:', res);
+        alert('Registration successful! Please login.');
+        this.router.navigate(['/login']);
+      },
+      error: (err) => {
+        console.error('Registration error:', err);
+        alert('Registration failed: ' + err.error?.message || err.message);
+      }
+    });
   }
+
 }

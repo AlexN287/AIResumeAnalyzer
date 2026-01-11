@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthRequest, AuthResponse } from '../model/auth.models';
+import { UserDTO } from '../model/auth.models';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +10,7 @@ import { AuthRequest, AuthResponse } from '../model/auth.models';
 export class AuthService {
 
   private readonly API_URL = 'http://localhost:8080/api/auth'; 
-  // adjust base path if needed
+  private userKey = 'user';
 
   constructor(private http: HttpClient) {}
 
@@ -27,6 +28,19 @@ export class AuthService {
 
   getToken(): string | null {
     return localStorage.getItem('token');
+  }
+
+  saveUser(user: UserDTO) {
+    localStorage.setItem(this.userKey, JSON.stringify(user));
+  }
+
+  getUser(): UserDTO | null {
+    const raw = localStorage.getItem(this.userKey);
+    return raw ? (JSON.parse(raw) as UserDTO) : null;
+  }
+
+  getUserId(): number | null {
+    return this.getUser()?.id ?? null;
   }
 
   logout(): void {

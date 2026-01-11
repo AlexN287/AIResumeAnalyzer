@@ -9,4 +9,5 @@ import java.io.IOException;
 public interface ResumeService {
     Resume uploadResume(Long userId, MultipartFile file) throws IOException;
     UploadedFile getResumeFileByUserId(Long userId);
+    UploadedFile getResumeFileByResumeId(Long resumeId);
 }

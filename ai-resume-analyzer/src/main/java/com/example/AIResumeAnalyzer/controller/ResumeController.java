@@ -46,10 +46,10 @@ public class ResumeController {
         }
     }
 
-    @GetMapping("/{userId}/pdf")
-    public ResponseEntity<byte[]> getResumePdf(@PathVariable Long userId) {
+    @GetMapping("/{resumeId}/pdf")
+    public ResponseEntity<byte[]> getResumePdf(@PathVariable Long resumeId) {
         try {
-            UploadedFile file = resumeService.getResumeFileByUserId(userId);
+            UploadedFile file = resumeService.getResumeFileByResumeId(resumeId);
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION,
                             "inline; filename=\"" + file.getFileName() + "\"")

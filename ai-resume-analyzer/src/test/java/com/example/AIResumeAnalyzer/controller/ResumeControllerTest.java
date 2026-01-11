@@ -90,35 +90,35 @@ class ResumeControllerTest {
 
     @Test
     void getResumePdf_shouldReturnPdf() throws Exception {
-        Long userId = 1L;
+        Long resumeId = 1L;
 
         UploadedFile file = new UploadedFile();
         file.setFileName("resume.pdf");
         file.setContentType("application/pdf");
         file.setData("PDF content".getBytes());
 
-        when(resumeService.getResumeFileByUserId(userId)).thenReturn(file);
+        when(resumeService.getResumeFileByResumeId(resumeId)).thenReturn(file);
 
-        mockMvc.perform(get("/api/resumes/{userId}/pdf", userId))
+        mockMvc.perform(get("/api/resumes/{resumeId}/pdf", resumeId))
                 .andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"resume.pdf\""))
                 .andExpect(content().contentType(MediaType.APPLICATION_PDF))
                 .andExpect(content().bytes("PDF content".getBytes()));
 
-        verify(resumeService).getResumeFileByUserId(userId);
+        verify(resumeService).getResumeFileByResumeId(resumeId);
     }
 
     @Test
     void getResumePdf_shouldReturnNotFound_whenResumeMissing() throws Exception {
-        Long userId = 1L;
+        Long resumeId = 1L;
 
-        when(resumeService.getResumeFileByUserId(userId))
+        when(resumeService.getResumeFileByResumeId(resumeId))
                 .thenThrow(new RuntimeException("Resume not found"));
 
-        mockMvc.perform(get("/api/resumes/{userId}/pdf", userId))
+        mockMvc.perform(get("/api/resumes/{resumeId}/pdf", resumeId))
                 .andExpect(status().isNotFound());
 
-        verify(resumeService).getResumeFileByUserId(userId);
+        verify(resumeService).getResumeFileByResumeId(resumeId);
     }
 
 
