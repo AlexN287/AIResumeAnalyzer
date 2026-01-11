@@ -6,11 +6,9 @@ export interface AuthRequest {
 export interface UserDTO {
   id: number;
   username: string;
-  email?: string;
-  roles?: string[];
 }
 
 export interface AuthResponse {
   token: string;
-  user: UserDTO;
+  userDTO: UserDTO;
 }

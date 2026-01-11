@@ -3,42 +3,46 @@ package com.example.AIResumeAnalyzer.openAI;
 import com.example.AIResumeAnalyzer.Utils.PDFUtils;
 import com.example.AIResumeAnalyzer.model.Resume;
 import com.example.AIResumeAnalyzer.model.ResumeAnalysis;
-import com.openai.client.OpenAIClient;
-import com.openai.client.okhttp.OpenAIOkHttpClient;
-import com.openai.models.responses.Response;
-import com.openai.models.responses.ResponseCreateParams;
+
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.chat.prompt.PromptTemplate;
+import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 @Service
 public class OpenAIservice {
 
-    private final OpenAIClient openAIClient;
+    private final ChatModel chatModel;
 
-    public OpenAIservice() {
-        this.openAIClient = OpenAIOkHttpClient.fromEnv();
+    public OpenAIservice(ChatModel chatModel) {
+        this.chatModel = chatModel;
     }
 
-    /*public String chatWithAI(String userMessage) {
-        ResponseCreateParams params = ResponseCreateParams.builder()
-                .model("gpt-5-nano")
-                .input(userMessage)
-                .build();
-
-        Response response = openAIClient.responses().create(params);
-
-        return response.output().get(1).message().get().content().get(0).outputText().get().text();
-    }*/
-
     public ResumeAnalysis analyzeResume(byte[] resumeData, Resume resume) {
-        // 1. Extract text from PDF
         String resumeText = PDFUtils.extractText(resumeData);
 
         if (resumeText == null || resumeText.trim().isEmpty()) {
             throw new IllegalArgumentException("Resume text extraction failed");
         }
 
-        // 2. Build prompt
-        String prompt = """
+        String aiText = callOpenAI(resumeText);
+
+        return parseAIResponse(aiText, resume);
+    }
+
+    private String callOpenAI(String resumeText) {
+        String system = """
+            You are an assistant that analyzes resumes.
+            Follow the user's output format exactly.
+            """;
+
+        String userTemplate = """
             Analyze the following resume.
             Return the result in the following format:
 
@@ -55,34 +59,31 @@ public class OpenAIservice {
             ...
 
             Resume:
-            %s
-            """.formatted(resumeText);
+            {resume}
+            """;
 
-        // 3. Call OpenAI
-        String aiText = callOpenAI(prompt);
+        PromptTemplate template = new PromptTemplate(userTemplate);
+        String userText = template.render(Map.of("resume", resumeText));
 
-        // 4. Parse response into ResumeAnalysis
-        return parseAIResponse(aiText, resume);
-    }
-
-    private String callOpenAI(String prompt) {
-        ResponseCreateParams params = ResponseCreateParams.builder()
-                .model("gpt-5-nano")
-                .input(prompt)
+        OpenAiChatOptions options = OpenAiChatOptions.builder()
+                .temperature(0.2)
                 .build();
 
-        Response response = openAIClient.responses().create(params);
+        Prompt prompt = new Prompt(
+                java.util.List.of(
+                        new SystemMessage(system),
+                        new UserMessage(userText)
+                ),
+                options
+        );
 
-        // Get the text output from the first ResponseOutputItem
-        if (response.output() != null && !response.output().isEmpty()) {
-            return response.output().get(1).message().get().content().get(0).outputText().get().text();
-        }
+        ChatResponse response = chatModel.call(prompt);
 
-        return "";
+        String content = response.getResult().getOutput().getText();
+        return (content != null) ? content : "";
     }
 
     private ResumeAnalysis parseAIResponse(String aiText, Resume resume) {
-        // Extract each section
         String strengths = extractSection(aiText, "Strengths:", "Weaknesses:");
         String weaknesses = extractSection(aiText, "Weaknesses:", "Skill Suggestions:");
         String skillSuggestions = extractSection(aiText, "Skill Suggestions:", "Overall Feedback:");

@@ -1,1 +1,127 @@
-<p>main works!</p>
+<div class="min-h-screen flex flex-col bg-gray-100">
+
+  <!-- Header -->
+  <header class="bg-white shadow-md">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+      <h1 class="text-xl font-bold">AI Resume Analyzer</h1>
+
+      <button
+        (click)="logout()"
+        class="text-red-500 hover:text-red-600 font-medium"
+      >
+        Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 container mx-auto px-6 py-8">
+
+    <h2 class="text-2xl font-bold mb-6">Your Resumes</h2>
+
+    <!-- Upload Resume -->
+<div class="mb-4">
+  <input
+  type="file"
+  #fileInput
+  accept="application/pdf"
+  hidden
+  (change)="onFileSelected($event)"
+/>
+
+<button
+  (click)="fileInput.click()"
+  [disabled]="isUploading()"
+  class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
+>
+  {{ isUploading() ? 'Uploading...' : 'Upload Resume (PDF)' }}
+</button>
+
+</div>
+
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- LEFT: Resume List -->
+      <div class="lg:col-span-1 space-y-3">
+
+        <div *ngIf="resumeAnalyses().length === 0"
+             class="bg-white p-4 rounded shadow text-gray-500">
+          No resumes found
+        </div>
+
+        <div
+          *ngFor="let analysis of resumeAnalyses()"
+          (click)="selectAnalysis(analysis)"
+          class="flex items-center justify-between p-4 bg-white rounded-lg shadow hover:bg-gray-50 cursor-pointer"
+        >
+          <div class="flex items-center space-x-3">
+            <span class="text-2xl">📄</span>
+            <div>
+              <p class="font-semibold">{{ analysis.fileName }}</p>
+              <p class="text-sm text-gray-500">{{ analysis.uploadDate }}</p>
+            </div>
+          </div>
+
+          <button
+            (click)="deleteAnalysis(analysis.id!, $event)"
+            class="text-red-500 hover:text-red-700"
+            title="Delete"
+          >
+            🗑️
+          </button>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Resume + Analysis -->
+      <div class="lg:col-span-2">
+
+        <div *ngIf="selectedAnalysis(); else emptyState"
+             class="bg-white p-6 rounded-lg shadow space-y-6">
+
+          <h3 class="text-xl font-bold">
+            {{ selectedAnalysis()?.fileName }}
+          </h3>
+
+          <!-- PDF PREVIEW -->
+          <iframe
+            *ngIf="pdfUrl()"
+            [src]="pdfUrl()"
+            class="w-full h-96 border rounded"
+          ></iframe>
+
+          <section>
+            <h4 class="font-semibold">Strengths</h4>
+            <p>{{ selectedAnalysis()?.strengths }}</p>
+          </section>
+
+          <section>
+            <h4 class="font-semibold">Weaknesses</h4>
+            <p>{{ selectedAnalysis()?.weaknesses }}</p>
+          </section>
+
+          <section>
+            <h4 class="font-semibold">Skill Suggestions</h4>
+            <p>{{ selectedAnalysis()?.skillSuggestions }}</p>
+          </section>
+
+          <section>
+            <h4 class="font-semibold">Overall Feedback</h4>
+            <p>{{ selectedAnalysis()?.overallFeedback }}</p>
+          </section>
+
+        </div>
+
+        <ng-template #emptyState>
+          <div class="bg-white p-6 rounded-lg shadow text-gray-500">
+            Select a resume to view its analysis
+          </div>
+        </ng-template>
+
+      </div>
+
+    </div>
+  </main>
+
+</div>

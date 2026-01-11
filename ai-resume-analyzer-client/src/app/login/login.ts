@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { NgIf } from '@angular/common';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
+import { UserDTO } from '../model/auth.models';
 
 @Component({
   standalone: true,
@@ -47,6 +48,8 @@ constructor(
         // Save JWT token
         this.authService.saveToken(res.token);
 
+        this.authService.saveUser(res.userDTO);
+
         // Navigate to home/dashboard
         this.router.navigate(['/main']);
       },
@@ -56,4 +59,9 @@ constructor(
       }
     });
   }
+
+  goToRegister() {
+  this.router.navigate(['/register']);
+}
+
 }

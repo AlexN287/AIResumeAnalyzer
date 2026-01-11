@@ -67,4 +67,14 @@ public class ResumeServiceImpl implements ResumeService {
 
         return resume.getUploadedFile();
     }
+
+    @Transactional
+    @Override
+    public UploadedFile getResumeFileByResumeId(Long resumeId) {
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new RuntimeException("Resume not found"));
+
+        return resume.getUploadedFile();
+    }
+
 }

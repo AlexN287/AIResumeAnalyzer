@@ -19,17 +19,12 @@ public class ResumeAnalysisController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getResumeAnalysesByUser(@PathVariable Long userId) {
         List<ResumeAnalysisDTO> analyses = resumeAnalysisService.getAnalysesByUserId(userId);
-
-        if (analyses.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
         return ResponseEntity.ok(analyses);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteResumeAnalysis(@PathVariable Long id) {
         resumeAnalysisService.deleteResumeAnalysis(id);
-        return ResponseEntity.ok("Resume analysis, resume, and uploaded file deleted successfully.");
+        return ResponseEntity.noContent().build();
     }
 }
