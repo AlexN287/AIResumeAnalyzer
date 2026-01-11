@@ -32,6 +32,12 @@ class ResumeServiceTest {
     @Mock private OpenAIservice openAIservice;
     @Mock private ResumeAnalysisRepository resumeAnalysisRepository;
 
+    @Mock
+    private OpenAIservice openAIservice;
+
+    @Mock
+    private ResumeAnalysisRepository resumeAnalysisRepository;
+
     @InjectMocks
     private ResumeServiceImpl resumeService;
 
