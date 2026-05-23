@@ -23,5 +23,24 @@ spring:
           model: gpt-4o-mini
           temperature: 0.2
 
+    mcp:
+      client:
+        request-timeout: 60s
+        enabled: true
+        initialized: true
+        stdio:
+          connections:
+            docker-gateway:
+              command: docker
+              args: [ "mcp", "gateway", "run" ]
+
 jwt:
   secret: ${JWT_SECRET}
+
+logging:
+  level:
+    org.springframework.ai: DEBUG
+
+    org.springframework.ai.mcp: DEBUG
+
+    org.springframework.ai.openai: TRACE
