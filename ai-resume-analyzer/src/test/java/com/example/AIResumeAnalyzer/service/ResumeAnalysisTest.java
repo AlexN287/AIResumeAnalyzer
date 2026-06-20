@@ -31,6 +31,9 @@ public class ResumeAnalysisTest {
     @Mock
     private UploadedFileRepository uploadedFileRepository;
 
+    @Mock
+    private S3StorageService s3StorageService;
+
     @InjectMocks
     private ResumeAnalysisImpl resumeAnalysisService;
 
@@ -43,6 +46,7 @@ public class ResumeAnalysisTest {
         uploadedFile = new UploadedFile();
         uploadedFile.setId(1L);
         uploadedFile.setFileName("test.pdf");
+        uploadedFile.setS3Key("resumes/1/uuid_test.pdf");
 
         resume = new Resume();
         resume.setId(1L);
@@ -66,6 +70,7 @@ public class ResumeAnalysisTest {
         verify(resumeAnalysisRepository).delete(analysis);
         verify(resumeRepository).delete(resume);
         verify(uploadedFileRepository).delete(uploadedFile);
+        verify(s3StorageService).deleteFile("resumes/1/uuid_test.pdf");
     }
 
     @Test
@@ -82,5 +87,6 @@ public class ResumeAnalysisTest {
         verify(resumeAnalysisRepository, Mockito.never()).delete(Mockito.any());
         verify(resumeRepository, Mockito.never()).delete(Mockito.any());
         verify(uploadedFileRepository, Mockito.never()).delete(Mockito.any());
+        verify(s3StorageService, Mockito.never()).deleteFile(Mockito.any());
     }
 }

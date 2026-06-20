@@ -95,7 +95,8 @@ class ResumeControllerTest {
         UploadedFile file = new UploadedFile();
         file.setFileName("resume.pdf");
         file.setContentType("application/pdf");
-        file.setData("PDF content".getBytes());
+        file.setS3Key("resumes/1/uuid_resume.pdf");
+        file.setData("PDF content".getBytes()); // transient — simulates bytes fetched from S3
 
         when(resumeService.getResumeFileByResumeId(resumeId)).thenReturn(file);
 

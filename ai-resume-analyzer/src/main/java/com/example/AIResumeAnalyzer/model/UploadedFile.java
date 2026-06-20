@@ -21,7 +21,10 @@ public class UploadedFile {
     private String contentType;
     private LocalDateTime uploadedAt = LocalDateTime.now();
 
-    @Lob
-    @Column(nullable = false)
+    @Column(name = "s3_key", nullable = false)
+    private String s3Key;
+
+    /** Not persisted — populated on demand after fetching bytes from S3. */
+    @Transient
     private byte[] data;
 }

@@ -12,3 +12,9 @@ spring:
 
 jwt:
   secret: 01234567890123456789012345678901
+
+aws:
+  s3:
+    bucket-name: test-bucket
+    region: us-east-1
+

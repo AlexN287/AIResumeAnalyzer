@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,6 +32,7 @@ class ResumeServiceTest {
     @Mock private ResumeRepository resumeRepository;
     @Mock private OpenAIservice openAIservice;
     @Mock private ResumeAnalysisRepository resumeAnalysisRepository;
+    @Mock private S3StorageService s3StorageService;
 
     @InjectMocks
     private ResumeServiceImpl resumeService;
@@ -65,7 +67,7 @@ class ResumeServiceTest {
         uploadedFile.setId(10L);
         uploadedFile.setFileName("cv.pdf");
         uploadedFile.setContentType("application/pdf");
-        uploadedFile.setData(new byte[]{1, 2, 3});
+        uploadedFile.setS3Key("resumes/1/some-uuid_cv.pdf");
 
         resume = new Resume();
         resume.setId(resumeId);
@@ -93,6 +95,8 @@ class ResumeServiceTest {
         when(resumeAnalysisRepository.save(any(ResumeAnalysis.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
+        // s3StorageService.uploadFile is void — no stubbing needed (default is do-nothing)
+
         Resume saved = resumeService.uploadResume(userId, multipartFile);
 
         Assertions.assertNotNull(saved);
@@ -110,6 +114,7 @@ class ResumeServiceTest {
         Assertions.assertEquals("Well-prepared candidate", analysis.getOverallFeedback());
 
         verify(userRepository).findById(userId);
+        verify(s3StorageService).uploadFile(anyString(), any(byte[].class), anyString());
         verify(resumeRepository).save(any(Resume.class));
         verify(openAIservice).analyzeResume(any(byte[].class), any(Resume.class));
         verify(resumeAnalysisRepository).save(any(ResumeAnalysis.class));
@@ -127,12 +132,13 @@ class ResumeServiceTest {
         Assertions.assertEquals("User not found", ex.getMessage());
 
         verify(userRepository).findById(99L);
-        verifyNoInteractions(resumeRepository, openAIservice, resumeAnalysisRepository);
+        verifyNoInteractions(resumeRepository, openAIservice, resumeAnalysisRepository, s3StorageService);
     }
 
     @Test
     void getResumeFileByResumeId_success() {
         when(resumeRepository.findById(resumeId)).thenReturn(Optional.of(resume));
+        when(s3StorageService.downloadFile(uploadedFile.getS3Key())).thenReturn(new byte[]{1, 2, 3});
 
         UploadedFile result = resumeService.getResumeFileByResumeId(resumeId);
 
@@ -143,7 +149,7 @@ class ResumeServiceTest {
         Assertions.assertArrayEquals(new byte[]{1, 2, 3}, result.getData());
 
         verify(resumeRepository).findById(resumeId);
-        verifyNoMoreInteractions(resumeRepository);
+        verify(s3StorageService).downloadFile(uploadedFile.getS3Key());
     }
 
     @Test
@@ -162,6 +168,7 @@ class ResumeServiceTest {
     @Test
     void getResumeFileByUserId_shouldReturnUploadedFile() {
         when(resumeRepository.findByUserId(userId)).thenReturn(Optional.of(resume));
+        when(s3StorageService.downloadFile(uploadedFile.getS3Key())).thenReturn(new byte[]{1, 2, 3});
 
         UploadedFile result = resumeService.getResumeFileByUserId(userId);
 
@@ -170,6 +177,7 @@ class ResumeServiceTest {
         Assertions.assertArrayEquals(new byte[]{1, 2, 3}, result.getData());
 
         verify(resumeRepository).findByUserId(userId);
+        verify(s3StorageService).downloadFile(uploadedFile.getS3Key());
     }
 
     @Test
