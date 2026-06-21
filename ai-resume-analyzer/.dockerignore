@@ -1,0 +1,10 @@
+target/
+.env
+.aws/
+.git/
+.gitignore
+*.md
+.mvn/
+mvnw
+mvnw.cmd
+
